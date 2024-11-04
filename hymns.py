@@ -121,19 +121,21 @@ def get_qr(text: str):
 
 
 font = 'times-roman'
-page_width = 495.0
-page_height = 711.0
+# This is the page size used by Church PDFs
+page_width = 495.0  #  6.875" ; implies 1.625" margin (beyond the actual margins)
+page_height = 711.0  # 9.875" ; implies 1.125" margin (beyond the actual margins)
 
 final = pymupdf.Document()
 
 # intro pages
 page = final.new_page(width=page_width, height=page_height)
 
-title_rect = (page_width * 0.1, page_height * 0.05, page_width * 0.9, page_height * 0.15)
+title_rect = (page_width * 0.1, page_height * 0.05, page_width * 0.9, page_height * 0.15)  # (49.5, 35.55, 445.5, 106.65)
 text = 'Hymns\x97For Home and Church'
-page.insert_textbox(title_rect, text, fontsize=30, fontname=font)
+# left aligned due to the extra wide \x97 char which messes up center algo
+page.insert_textbox(title_rect, text, fontsize=31, fontname=font)
 
-img_rect = (page_width * 0.1, page_width * 0.2, page_width * 0.9, (page_width * 0.9) + (page_width * 0.1))
+img_rect = (page_width * 0.1, page_width * 0.2, page_width * 0.9, (page_width * 0.9) + (page_width * 0.1))  # (49.5, 99.0, 445.5, 495.0)
 cover = pathlib.Path() / '.local/cache/cover.jpg'
 if not cover.exists():
     cover.parent.mkdir(parents=True, exist_ok=True)
@@ -142,9 +144,13 @@ if not cover.exists():
     cover.write_bytes(img_response.content)
 page.insert_image(img_rect, filename=cover.resolve())
 
-link_rect = pymupdf.Rect(page_width * 0.1, page_height * 0.8, page_width * 0.9, page_height * 0.9)
+notice_rect = (page_width * 0.1, page_height * 0.73, page_width * 0.9, page_height * 0.85)  # (49.5, 519.03, 445.5, 604.35)
+text = 'Property of G4 Ward, Richardson TX Stake\nDo Not Remove from Chapel'
+page.insert_textbox(notice_rect, text, fontsize=20, fontname=font, align=pymupdf.TEXT_ALIGN_CENTER)
+
+link_rect = pymupdf.Rect(page_width * 0.1, page_height * 0.8, page_width * 0.9, page_height * 0.9)  # (49.5, 568.8, 445.5, 639.9)
 text = '\nScan this code to access these hymns digitally'
-page.insert_textbox(link_rect, text, fontsize=10, fontname=font, align=pymupdf.TEXT_ALIGN_CENTER)
+page.insert_textbox(link_rect, text, fontsize=12, fontname=font, align=pymupdf.TEXT_ALIGN_CENTER)
 page.insert_link({
     'kind': pymupdf.LINK_URI,
     'from': link_rect,
