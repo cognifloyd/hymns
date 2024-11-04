@@ -193,5 +193,16 @@ for hymn in hymn_data:
         final.new_page(width=page_width, height=page_height)
     doc.close()
 
+# resize to letter paper (sadly, this will drop the links)
+resized_doc = pymupdf.Document()
+
+letter = pymupdf.paper_size('letter')  # (612, 792) = 8.5"x11.0"
+for src_page in final:
+    dst_page = resized_doc.new_page(width=letter[0], height=letter[1])
+    if src_page.get_text():
+        dst_page.show_pdf_page(dst_page.rect, final, pno=src_page.number, keep_proportion=True)
+
+resized_doc.save('hymns-letter.pdf')
+resized_doc.close()
 final.save('hymns.pdf')
 final.close()
